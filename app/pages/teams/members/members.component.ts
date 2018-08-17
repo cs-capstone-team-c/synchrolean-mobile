@@ -51,7 +51,7 @@ export class MembersComponent implements OnInit {
         this.teamDescription = this.team.teamDescription;
         this.teamName = this.team.teamName;
         this.isOwner =
-          this.team.ownerId === this.accountService.account.ownerId
+          this.team.ownerEmail === this.accountService.account.email
             ? true
             : false;
       },
