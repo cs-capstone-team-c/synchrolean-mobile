@@ -105,7 +105,7 @@ export class ServerService {
   addTeam(name: string, description: string) {
     let endpoint = this._url + '/api/team';
     let body = {
-      ownerId: this.accountService.account.ownerId,
+      ownerEmail: this.accountService.account.email,
       teamName: name,
       teamDescription: description
     };
