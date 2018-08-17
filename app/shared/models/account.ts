@@ -1,7 +1,6 @@
 //  account.ts contains the account class
 
 export interface AccountServerInterface {
-  ownerId: number;
   firstName: string;
   lastName: string;
   email: string;
