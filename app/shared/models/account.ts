@@ -1,7 +1,6 @@
 //  account.ts contains the account class
 
 export interface AccountServerInterface {
-  ownerId: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -9,7 +8,6 @@ export interface AccountServerInterface {
 }
 
 export class Account {
-  private _ownerId: number;
   private _firstname: string;
   private _lastname: string;
   private _email: string;
@@ -18,7 +16,6 @@ export class Account {
   private _serverUrl: string;
 
   constructor(account: AccountServerInterface) {
-    this._ownerId = account.ownerId;
     this._email = account.email;
     this._firstname = account.firstName;
     this._lastname = account.lastName;
@@ -26,20 +23,10 @@ export class Account {
   }
 
   fromServer(account: AccountServerInterface) {
-    this._ownerId = account.ownerId;
     this._email = account.email;
     this._firstname = account.firstName;
     this._lastname = account.lastName;
     this._isDeleted = account.isDeleted;
-  }
-
-  get ownerId(): number {
-    return this._ownerId;
-  }
-
-  //  Set/get for email
-  set email(newEmail: string) {
-    this._email = newEmail;
   }
 
   get email(): string {

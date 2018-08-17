@@ -3,20 +3,20 @@ export interface TeamServerInterface {
   id: number;
   teamName: string;
   teamDescription: string;
-  ownerId: number;
+  ownerEmail: string;
 }
 
 export class Team {
   private _id: number = 0; //the unique ID for a team
   private _teamName: string; //the name for a team
   private _teamDescription: string; //the description for a team
-  private _ownerId: number;
+  private _ownerEmail: string;
 
   constructor(team: TeamServerInterface) {
     this._id = team.id;
     this._teamName = team.teamName;
     this._teamDescription = team.teamDescription;
-    this._ownerId = team.ownerId;
+    this._ownerEmail = team.ownerEmail;
   }
 
   public set id(id: number) {
@@ -43,11 +43,11 @@ export class Team {
     return this._teamDescription;
   }
 
-  public set ownerId(id: number) {
-    this._ownerId = id;
+  public set ownerEmail(email: string) {
+    this._ownerEmail = email;
   }
 
-  public get ownerId(): number {
-    return this._ownerId;
+  public get ownerEmail(): string {
+    return this._ownerEmail;
   }
 }
