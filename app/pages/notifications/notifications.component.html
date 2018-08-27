@@ -1,0 +1,19 @@
+<ActionBar class="action-bar">
+    <NavigationButton android.systemIcon="ic_menu_back" (tap)="backToAccount()"></NavigationButton>
+    <ActionItem ios.position="left" android:visibility="collapse" (tap)="backToAccount()">
+        <Label text="&#xf060;" fontFamily="FontAwesome" fontSize="20"></Label>          
+    </ActionItem>
+    <Label class="action-bar-title" fontSize="32" text="Notifications"></Label>
+</ActionBar>
+<ListView [items]="teamsObservable | async">
+    <ng-template let-team="item" let-i="index">
+        <StackLayout>
+            <Label [text]="team.teamName"></Label>
+            <Label [text]="team.teamDescription"></Label>
+            <FlexBoxLayout justifyContent="center">
+                <Button class="p-10 btn btn-primary w-full" text="Accept" (tap)="acceptTeamInvite(team.id)"></Button>
+                <Button class="p-10 btn  w-full" backgroundColor="red" color="white" text="Decline" (tap)="declineTeamInvite(team.teamId)"></Button>
+            </FlexBoxLayout>
+        </StackLayout>
+    </ng-template>
+</ListView> 

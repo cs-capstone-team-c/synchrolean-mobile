@@ -5,7 +5,7 @@ import { NativeScriptHttpClientModule } from 'nativescript-angular/http-client';
 import { NativeScriptModule } from 'nativescript-angular/nativescript.module';
 import { NativeScriptFormsModule } from 'nativescript-angular/forms';
 import { TNSCheckBoxModule } from 'nativescript-checkbox/angular';
-import { NativeScriptUIChartModule } from 'nativescript-ui-chart/angular';
+import { NativeScriptUIChartModule } from 'nativescript-ui-chart/angular/chart-directives';
 
 import { TaskService } from '~/shared/services/tasks.service';
 import { DatabaseService } from '~/shared/services/database.service';
@@ -30,8 +30,11 @@ import { RegisterComponent } from '~/pages/account/register/register.component';
 import { MembersTasksComponent } from '~/pages/teams/members-tasks-list/members-tasks.component';
 import { DayBoxesComponent } from '~/pages/tasks/day-boxes/day-boxes.component';
 import { MetricsItemComponent } from '~/pages/metrics/metrics-item/metrics-item.component';
+import { NotificationsComponent } from '~/pages/notifications/notifications.component';
 
 import { AuthInterceptor } from '~/shared/helpers/auth.interceptor';
+import { AccountComponent } from '~/pages/account/account.component';
+import { EditAccountComponent } from '~/pages/account/edit-account/edit-account.component';
 
 // Uncomment and add to NgModule imports  if you need to use the HTTP wrapper
 // import { NativeScriptHttpModule } from 'nativescript-angular/http';
@@ -62,7 +65,11 @@ import { AuthInterceptor } from '~/shared/helpers/auth.interceptor';
     MetricsComponent,
     MembersTasksComponent,
     DayBoxesComponent,
-    MetricsItemComponent
+    MetricsItemComponent,
+    AccountComponent,
+    EditAccountComponent,
+    NotificationsComponent
+
   ],
   schemas: [NO_ERRORS_SCHEMA],
   providers: [

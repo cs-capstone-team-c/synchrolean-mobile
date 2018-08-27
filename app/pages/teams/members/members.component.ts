@@ -5,13 +5,13 @@ import { TeamService } from '~/shared/services/teams.service';
 
 import { Account } from '~/shared/models/account';
 import { Team } from '~/shared/models/team';
-import * as dialogs from 'ui/dialogs';
+import * as dialogs from 'tns-core-modules/ui/dialogs/dialogs';
 import { Task } from '~/shared/models/task';
-import { ObservableArray } from 'data/observable-array/observable-array';
 import { AuthenticationService } from '~/shared/services/auth.service';
 import { TaskService } from '~/shared/services/tasks.service';
 import { AccountService } from '~/shared/services/account.service';
-import { SearchBar } from "ui/search-bar";
+import { SearchBar } from "tns-core-modules/ui/search-bar/search-bar";
+import { MetricsService } from '~/shared/services/metrics.service';
 
 
 //name component and the markup and stayle sheet
@@ -34,6 +34,7 @@ export class MembersComponent implements OnInit {
   public permittedTeams:Array<Team>;
   public searchPhrase: string;
   public searchMembers: Array<Account>;
+  public metrics: Array<Array<string>>;
 
   //permissions check
   public isOwner: Boolean;
@@ -60,7 +61,8 @@ export class MembersComponent implements OnInit {
     private teamService: TeamService,
     private pageR: PageRoute,
     private taskService: TaskService,
-    private routerE: RouterExtensions
+    private routerE: RouterExtensions,
+    private metricsService: MetricsService
   ) {
     this.pageR.activatedRoute
       .pipe(switchMap(activatedRoute => activatedRoute.params))
@@ -101,6 +103,7 @@ export class MembersComponent implements OnInit {
     this.teams$ = new Array<Team>();
     this.permittedTeams = new Array<Team>();
     this.authInvites = new Array<Account>();
+    this.metrics = new Array<Array<string>>();
 
     //permission intialized
     this.isOwner = false;
@@ -117,6 +120,15 @@ export class MembersComponent implements OnInit {
     // Get team by id
     this.teamService.getTeam(this.id).subscribe(
       response => {
+        let today = new Date();
+        let tomorrow = new Date();
+        let lastWeek = new Date();
+        let month = new Date();
+
+        tomorrow.setDate(lastWeek.getDate() + 1); 
+        lastWeek.setDate(lastWeek.getDate() - 7); 
+        month.setDate(month.getDate() - 31);
+
         this.teamName = response.teamName;
         this.teamDesc = response.teamDescription;
         this.team = response;
@@ -130,22 +142,54 @@ export class MembersComponent implements OnInit {
                 .subscribe(tasks => {
                   this.tasks$[index] = new Array<Task>();
                   tasks.forEach(task => {
-                    this.tasks$[index].push(task);
+                    if(task.teamId === this.team.id && task.isDeleted === false){
+                      this.tasks$[index].push(task);
+                    }
                   });
                 });
               this.members.push(account);
               this.taskVisible.push(false);
 
+              //get daily comp rate for member
+              this.metrics[index] = new Array<string>();
+              this.metricsService
+              .getMemberCompletionRate(this.team.id, account.email, today.toDateString(), tomorrow.toDateString())
+              .subscribe(res=>{
+                this.metrics[index].push(res.toFixed(2).toString() +'%'); 
+              },err=>{
+                this.metrics[index].push('0%');
+              });
+
+              //get weekly comp rate for member
+              this.metricsService
+              .getMemberCompletionRate(this.team.id, account.email, lastWeek.toDateString(), today.toDateString(), )
+              .subscribe(res=>{
+                this.metrics[index].push(res.toFixed(2).toString() +'%'); 
+              },err=>{ 
+                this.metrics[index].push('0%');
+              });
+
+              //get monthly comp rate for member
+              this.metricsService
+              .getMemberCompletionRate(this.team.id, account.email, month.toDateString(), today.toDateString(), )
+              .subscribe(res=>{
+                this.metrics[index].push(res.toFixed(2).toString() +'%'); 
+              },err=>{
+                this.metrics[index].push('0%');
+              });
+
               //check the user is a member of the team
-              if (account.email === this.authService.email) {
+              if (account.email.toUpperCase() === this.authService.email.toUpperCase()) { 
                 this.isMember = true;
                 this.addMember = true;
 
                 //check if they are the owner
                 this.isOwner =
-                  this.team.ownerEmail === this.authService.email ? true : false;
+                  this.team.ownerEmail.toUpperCase() === this.authService.email.toUpperCase() ? true : false;
               }
             });
+
+            //check if they have permission to view the team
             if(!this.isMember){
               this.teamService.getTeamPermissions(this.team.id)
               .subscribe(res=>{
@@ -174,6 +218,12 @@ export class MembersComponent implements OnInit {
     if (tasks === undefined) return 0;
 
     return tasks.length;
+  }
+
+  getLength(item:Object[]){
+    if(item === undefined) return 0;
+
+    return item.length;
   }
 
   //navigate to members task list taking id with it
@@ -240,9 +290,22 @@ export class MembersComponent implements OnInit {
     if (this.teamVisible === true) {
       return;
     }
+    this.taskVisible.forEach(value=>{
+      value = false;
+    });
+
+    let today = new Date();
+    let tomorrow = new Date();
+    let lastWeek = new Date();
+    let month = new Date();
+
+    tomorrow.setDate(lastWeek.getDate() + 1); 
+    lastWeek.setDate(lastWeek.getDate() - 7); 
+    month.setDate(month.getDate() - 31);
 
     this.tasks$ = new Array<Array<Task>>();
     this.members = new Array<Account>();
+    this.metrics = new Array<Array<string>>();
     // Get team members call
     this.teamService.getTeamMembers(this.id).subscribe(
       accounts => {
@@ -252,11 +315,40 @@ export class MembersComponent implements OnInit {
             this.taskService.getuserTodo(account.email).subscribe(tasks => {
               this.tasks$[index] = new Array<Task>();
               tasks.forEach(task => {
-                this.tasks$[index].push(task);
+                if(task.teamId === this.team.id && task.isDeleted === false){
+                  this.tasks$[index].push(task);
+                }
               });
             });
             this.members.push(account); // push account onto the component array
             this.taskVisible.push(false); //push false to array for visible members list
+            //get daily comp rate for member
+            this.metrics[index] = new Array<string>();
+            this.metricsService
+            .getMemberCompletionRate(this.team.id, account.email, today.toDateString(), tomorrow.toDateString())
+            .subscribe(res=>{
+              this.metrics[index].push(res.toFixed(2).toString() +'%'); 
+            },err=>{
+              this.metrics[index].push('0%');
+            });
+
+            //get weekly comp rate for member
+            this.metricsService
+            .getMemberCompletionRate(this.team.id, account.email, lastWeek.toDateString(), today.toDateString(), )
+            .subscribe(res=>{
+              this.metrics[index].push(res.toFixed(2).toString() +'%'); 
+            },err=>{ 
+              this.metrics[index].push('0%');
+            });
+
+            //get monthly comp rate for member
+            this.metricsService
+            .getMemberCompletionRate(this.team.id, account.email, month.toDateString(), today.toDateString(), )
+            .subscribe(res=>{
+              this.metrics[index].push(res.toFixed(2).toString() +'%'); 
+            },err=>{
+              this.metrics[index].push('0%');
+            });
           },
           error => {
             console.error('could not get team members', error);
@@ -728,7 +820,7 @@ export class MembersComponent implements OnInit {
       dialogs
       .confirm({
         title: "Permissions",
-        message:"Would you like to REJECT permission to view you team from this team?",
+        message:"Would you like to REJECT permission to view your team from this team?",
         okButtonText:'Yes',
         cancelButtonText:'No'
       }).then(r=>{
@@ -753,7 +845,7 @@ export class MembersComponent implements OnInit {
       dialogs
       .confirm({
         title: "Permissions",
-        message:"Would you like to GRANT permission to view you team from this team?",
+        message:"Would you like to GRANT permission to view your team from this team?",
         okButtonText:'Yes',
         cancelButtonText:'No'
       }).then(r=>{
@@ -799,7 +891,7 @@ export class MembersComponent implements OnInit {
             
             this.routerE.navigate(['/teams'], {
               transition: {
-                name: 'slideLeft'
+                name: 'slideRight'
               },
               clearHistory: true
             });
@@ -820,4 +912,15 @@ export class MembersComponent implements OnInit {
 
     });
   }
+
+  backToTeams(){
+    this.routerE.navigate(['/teams'], {
+      transition: {
+        name: 'slideRight'
+      },
+      clearHistory: true
+    });
+  }
+
+
 }

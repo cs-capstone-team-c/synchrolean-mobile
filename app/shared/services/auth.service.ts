@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
-import * as AppSettings from 'application-settings';
+import * as AppSettings from 'tns-core-modules/application-settings/application-settings';
 import * as JWT from 'jwt-decode';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AuthenticationService {
   constructor(private http: HttpClient) {
     if (AppSettings.hasKey('token')) {
       this.token = AppSettings.getString('token', '');
-      this.email = AppSettings.getString('email', '');
+      this.email = AppSettings.getString('email', '').toLowerCase();
       this.url = AppSettings.getString('url', '');
       let jwt = JWT(this.token);
       this.userId = jwt['OwnerId'];
